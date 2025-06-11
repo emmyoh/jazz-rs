@@ -3,7 +3,7 @@ use crate::{crypto::short_hash::ShortHash, id::rawcoid::RawCoID};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CoValueHeader {
     #[serde(rename = "type")]

@@ -4,7 +4,9 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 /// The priority value is used by the weighed round-robin algorithm used to determine the order in which messages are sent.
 ///
 /// The range and order of the priority values derives from [the specification for HTTP urgency](https://www.rfc-editor.org/rfc/rfc9218.html#name-urgency).
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy,
+)]
 #[repr(u8)]
 pub enum CoValuePriority {
     /// High priority (0)

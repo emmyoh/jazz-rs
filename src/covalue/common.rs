@@ -13,14 +13,14 @@ pub enum CoValueType {
     BinaryCoStream,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CoValueUniqueness {
     uniqueness: String,
     created_at: DateTime<Utc>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all_fields = "camelCase")]
 #[serde(tag = "type")]
 pub enum Ruleset {

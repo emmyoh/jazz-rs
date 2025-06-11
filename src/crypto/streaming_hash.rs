@@ -14,7 +14,7 @@ impl StreamingHash {
         self.hasher.update_rayon(json_string.as_bytes());
     }
 
-    pub fn digest(self) -> super::hash::Hash {
+    pub fn digest(&self) -> super::hash::Hash {
         super::hash::Hash(*self.hasher.finalize().as_bytes())
     }
 }

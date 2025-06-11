@@ -14,7 +14,7 @@ pub struct CoValueKnownState {
     pub(crate) sessions: Vec<(SessionID, usize)>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionNewContent {
     after: usize,
@@ -22,7 +22,7 @@ pub struct SessionNewContent {
     last_signature: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all_fields = "camelCase")]
 #[serde(tag = "action")]
 pub enum SyncMessage {
