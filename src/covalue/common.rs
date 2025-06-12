@@ -37,3 +37,5 @@ pub enum SyncRole {
 }
 
 pub trait RawCoValue {}
+
+pub const MAX_RECOMMENDED_TX_SIZE: usize = 100 * 1024;
