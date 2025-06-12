@@ -1,5 +1,7 @@
 use crate::covalue::common::MAX_RECOMMENDED_TX_SIZE;
+use crate::crypto::sign::Signature;
 use crate::id::session_id::SessionID;
+use crate::id::signer_id::SignerID;
 use crate::sync::common::CoValueKnownState;
 use crate::sync::common::SyncMessage;
 use crate::{
@@ -8,7 +10,6 @@ use crate::{
     id::rawcoid::RawCoID,
 };
 use dashmap::DashMap;
-use ed25519_dalek::Signature;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use rayon::slice::ParallelSliceMut;
@@ -150,7 +151,7 @@ impl VerifiedState {
             .fold(0, |sum, tx| {
                 sum + match tx.type_.clone() {
                     TransactionType::Private {
-                        key_used,
+                        key_used: _,
                         encrypted_changes,
                     } => encrypted_changes.len(),
                     TransactionType::Trusting { changes } => changes.len(),
@@ -220,5 +221,55 @@ impl VerifiedState {
                         .unwrap_or(known_state_for_session_id.unwrap_or_default()))
             })
             .map(|x| *x)
+    }
+
+    pub fn try_add_transactions(
+        &mut self,
+        session_id: &SessionID,
+        signer_id: &SignerID,
+        new_transactions: &Vec<Transaction>,
+        given_expected_new_hash: &Option<Hash>,
+        new_signature: &Signature,
+        skip_verify: &Option<bool>,
+        given_new_streaming_hash: &Option<StreamingHash>,
+    ) -> anyhow::Result<()> {
+        let skip_verify = skip_verify.unwrap_or(false);
+        match (
+            skip_verify,
+            given_new_streaming_hash,
+            given_expected_new_hash,
+        ) {
+            (true, Some(given_new_streaming_hash), Some(given_expected_new_hash)) => Ok(self
+                .do_add_transactions(
+                    session_id,
+                    new_transactions,
+                    new_signature,
+                    given_expected_new_hash,
+                    given_new_streaming_hash,
+                )),
+            _ => {
+                let ExpectedNewHashAfter {
+                    expected_new_hash,
+                    new_streaming_hash,
+                } = self.expected_new_hash_after(session_id, new_transactions)?;
+                if let Some(given_expected_new_hash) = given_expected_new_hash {
+                    if given_expected_new_hash != &expected_new_hash {
+                        return Err(anyhow::anyhow!(
+                            "Invalid hash for session {} does not match (expected: {given_expected_new_hash}, actual: {expected_new_hash}",
+                            self.id
+                        ));
+                    }
+                }
+                signer_id.verify(expected_new_hash.to_string(), new_signature)?;
+                self.do_add_transactions(
+                    session_id,
+                    new_transactions,
+                    new_signature,
+                    &expected_new_hash,
+                    &*new_streaming_hash,
+                );
+                Ok(())
+            }
+        }
     }
 }
