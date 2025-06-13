@@ -11,6 +11,27 @@ impl Signature {
     }
 }
 
+impl Default for Signature {
+    fn default() -> Self {
+        Self(ed25519_dalek::Signature::from_bytes(&[0u8; 64]))
+    }
+}
+impl PartialOrd for Signature {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        PartialOrd::partial_cmp(&self.0.to_bytes(), &other.0.to_bytes())
+    }
+}
+impl Ord for Signature {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        Ord::cmp(&self.0.to_bytes(), &other.0.to_bytes())
+    }
+}
+impl std::hash::Hash for Signature {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(&self.0.to_bytes(), state);
+    }
+}
+
 impl FromStr for Signature {
     type Err = anyhow::Error;
 

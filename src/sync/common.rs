@@ -1,28 +1,30 @@
 use crate::{
     covalue::{covaluepriority::CoValuePriority, header::CoValueHeader, session::Transaction},
+    crypto::sign::Signature,
     id::{rawcoid::RawCoID, session_id::SessionID},
 };
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CoValueKnownState {
     pub(crate) id: RawCoID,
     /// Whether or not the header is known.
     pub(crate) header: bool,
     /// A list of sessions with their respective IDs and number of known transactions.
-    pub(crate) sessions: Vec<(SessionID, usize)>,
+    pub(crate) sessions: DashMap<SessionID, usize>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionNewContent {
-    after: usize,
-    new_transactions: Vec<Transaction>,
-    last_signature: Vec<u8>,
+    pub(crate) after: usize,
+    pub(crate) new_transactions: Vec<Transaction>,
+    pub(crate) last_signature: Signature,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all_fields = "camelCase")]
 #[serde(tag = "action")]
 pub enum SyncMessage {
@@ -54,7 +56,7 @@ pub enum SyncMessage {
         header: Option<CoValueHeader>,
         priority: CoValuePriority,
         /// A list of sessions with their respective IDs and new content.
-        new: Vec<(String, SessionNewContent)>,
+        new: DashMap<SessionID, SessionNewContent>,
     },
     #[serde(rename = "done")]
     /// Signals that a client is unsubscribing to changes made to a [`CoValue`].
